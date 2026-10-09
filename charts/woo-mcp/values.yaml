@@ -1,0 +1,7 @@
+image:
+  repository: woo-mcp
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+wcUrl: http://wordpress
+secretName: woo-api-keys
+gatewayNamespace: platform
