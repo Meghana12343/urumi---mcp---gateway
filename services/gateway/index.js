@@ -20,7 +20,7 @@ function audit(userId, server, tool, ms, outcome, error = null) {
 }
 
 function authenticate(req, res, next) {
-  const m = /^Bearer (.+)$/.exec(req.headers.authorization || "");
+  const m = /^Bearer\s+(\S+)\s*$/i.exec(req.headers.authorization || "");
   const user =
     m &&
     db
