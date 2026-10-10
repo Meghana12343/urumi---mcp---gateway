@@ -1,0 +1,8 @@
+image:
+  repository: gateway
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
+host: gateway.localhost
+secretName: gateway-secrets
+storageClass: ""
+storage: 1Gi
