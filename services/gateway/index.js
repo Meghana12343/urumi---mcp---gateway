@@ -6,7 +6,9 @@ import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import db from "./db.js";
 import { withClient } from "./upstream.js";
-import adminRouter from "./admin.js";
+import jwt from "jsonwebtoken";
+import adminRouter, { JWT_SECRET } from "./admin.js";
+import chatRouter from "./chat.js";
 
 const sha = (s) => crypto.createHash("sha256").update(s).digest("hex");
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "_");
@@ -20,10 +22,19 @@ function audit(userId, server, tool, ms, outcome, error = null) {
 
 function authenticate(req, res, next) {
   const m = /^Bearer\s+(\S+)\s*$/i.exec(req.headers.authorization || "");
-  const user = m && db.prepare(
-    `SELECT u.id, u.email, u.role FROM api_keys k JOIN users u ON u.id = k.user_id
-     WHERE k.key_hash = ? AND k.revoked = 0`
-  ).get(sha(m[1]));
+  let user = null;
+  if (m && m[1].startsWith("chat.")) {
+    try {
+      const p = jwt.verify(m[1].slice(5), JWT_SECRET);
+      if (p.purpose === "chat")
+        user = db.prepare("SELECT id, email, role FROM users WHERE id = ?").get(p.uid);
+    } catch {}
+  } else if (m) {
+    user = db.prepare(
+      `SELECT u.id, u.email, u.role FROM api_keys k JOIN users u ON u.id = k.user_id
+       WHERE k.key_hash = ? AND k.revoked = 0`
+    ).get(sha(m[1]));
+  }
   if (!user) return res.status(401).json({ error: "invalid or revoked API key" });
   req.user = user;
   next();
@@ -79,6 +90,7 @@ function buildServer(user) {
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use("/api/chat", chatRouter);
 app.use("/api", adminRouter);
 app.get("/healthz", (_req, res) => res.send("ok"));
 

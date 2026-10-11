@@ -138,3 +138,4 @@ router.get("/audit", session, (req, res) => {
 });
 
 export default router;
+export {JWT_SECRET, session };

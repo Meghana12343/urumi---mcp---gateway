@@ -27,11 +27,13 @@ spec:
           env:
             - name: DB_PATH
               value: /data/gateway.db
-            - name: JWT_SECRET
+            - name: GEMINI_MODEL
+              value: "{{ .Values.geminiModel }}"
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.secretName }}"
-                  key: jwt-secret
+                  key: gemini-api-key
+                  optional: true
           readinessProbe:
             httpGet:
               path: /healthz

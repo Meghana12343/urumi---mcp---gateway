@@ -198,6 +198,45 @@ function Audit() {
   );
 }
 
+function Chat() {
+  const [msgs, setMsgs] = useState([]);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const send = async () => {
+    const q = text.trim();
+    if (!q || busy) return;
+    const history = msgs.map((m) => ({ role: m.role, text: m.text }));
+    setMsgs((m) => [...m, { role: "user", text: q }]);
+    setText("");
+    setBusy(true);
+    try {
+      const r = await api("/chat", "POST", { message: q, history });
+      setMsgs((m) => [...m, { role: "assistant", text: r.reply, calls: r.calls }]);
+    } catch (e) {
+      setMsgs((m) => [...m, { role: "assistant", text: "Error: " + e.message, calls: [] }]);
+    }
+    setBusy(false);
+  };
+  return (
+    <div className="card">
+      {msgs.map((m, i) => (
+        <div key={i} style={{ margin: "10px 0" }}>
+          <b>{m.role === "user" ? "You" : "Agent"}:</b> {m.text}
+          {(m.calls || []).map((c, j) => (
+            <div key={j}><small>tool: {c.name}({JSON.stringify(c.args)}) - {c.ok ? "ok" : "error"} {c.ms}ms</small></div>
+          ))}
+        </div>
+      ))}
+      {busy && <small>thinking...</small>}
+      <div style={{ marginTop: 10 }}>
+        <input size="50" placeholder="Ask about products or orders..." value={text}
+          onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} />
+        <button className="b" onClick={send}>Send</button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState(undefined);
   const [tab, setTab] = useState("keys");
@@ -206,8 +245,8 @@ export default function App() {
   if (!user)
     return (<><style>{css}</style><Login onLogin={(u) => { setUser(u); setTab(u.role === "admin" ? "servers" : "keys"); }} /></>);
   const admin = user.role === "admin";
-  const tabs = [...(admin ? ["servers", "users"] : []), "keys", "audit"];
-  const view = { servers: <Servers />, users: <Users />, keys: <Keys />, audit: <Audit /> }[tab];
+  const tabs = [...(admin ? ["servers", "users"] : []), "keys", "audit", "chat"];
+  const view = { servers: <Servers />, users: <Users />, keys: <Keys />, audit: <Audit />, chat: <Chat /> }[tab];
   return (
     <>
       <style>{css}</style>
