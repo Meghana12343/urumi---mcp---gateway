@@ -25,15 +25,24 @@ spec:
           ports:
             - containerPort: 4000
           env:
-            - name: DB_PATH
-              value: /data/gateway.db
-            - name: GEMINI_MODEL
-              value: "{{ .Values.geminiModel }}"
-              valueFrom:
-                secretKeyRef:
-                  name: "{{ .Values.secretName }}"
-                  key: gemini-api-key
-                  optional: true
+            env:
+              - name: DB_PATH
+                value: /data/gateway.db
+              - name: JWT_SECRET
+                valueFrom:
+                  secretKeyRef:
+                    name: "{{ .Values.secretName }}"
+                    key: jwt-secret
+              - name: GEMINI_API_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: "{{ .Values.secretName }}"
+                    key: gemini-api-key
+                    optional: true
+              - name: GEMINI_MODEL
+                value: "{{ .Values.geminiModel }}"
+              - name: NODE_OPTIONS
+                value: "--dns-result-order=ipv4first"
           readinessProbe:
             httpGet:
               path: /healthz

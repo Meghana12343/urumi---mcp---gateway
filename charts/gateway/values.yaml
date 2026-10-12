@@ -6,4 +6,4 @@ host: gateway.localhost
 secretName: gateway-secrets
 storageClass: ""
 storage: 1Gi
-geminiModel: gemini-3.8-flash
+geminiModel: gemini-flash-lite-latest
