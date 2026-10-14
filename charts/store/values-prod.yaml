@@ -1,0 +1,2 @@
+host: store.example.com
+storageClass: local-path

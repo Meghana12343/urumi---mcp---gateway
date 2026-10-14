@@ -1,0 +1,6 @@
+host: gateway.example.com
+storageClass: local-path
+image:
+  repository: ghcr.io/meghana12343/gateway
+  tag: "0.2.0"
+  pullPolicy: IfNotPresent

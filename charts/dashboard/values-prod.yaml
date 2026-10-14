@@ -1,0 +1,5 @@
+host: dashboard.example.com
+image:
+  repository: ghcr.io/meghana12343/dashboard
+  tag: "0.1.0"
+  pullPolicy: IfNotPresent
